@@ -1,0 +1,23 @@
+{
+  "name": "dicebot",
+  "version": "0.0.0",
+  "description": "Dice-rolling bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jherd23/dicebot.git"
+  },
+  "author": "walcutt",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jherd23/dicebot/issues"
+  },
+  "homepage": "https://github.com/jherd23/dicebot#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0"
+  }
+}
