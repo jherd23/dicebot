@@ -38,7 +38,6 @@ const evaluatePool = (pool) => {
 }
 
 const handle = (msg) => {
-	console.log(msg.content.trim());
 	const content = msg.content.trim();
 	const start_of_dice = content.search(/[0-9]/);
 	if(start_of_dice === -1) {
