@@ -74,10 +74,10 @@ const handle = (msg) => {
 	reply += "Separated by these operators: [" + operators + "].";
 
 	if(errors.length > 0) {
-		reply += "\nBut, I didn't know what these were supposed to mean:";
-		reply += "\n```"
+		reply += "\nBut, I didn't know what " + (errors.length == 1 ? "this was" : "these were") + " supposed to mean:";
+		reply += "\n```\n"
 		reply += errors.reduce((acc, val) => acc + "\n" + val);
-		reply += "```\n";
+		reply += "```";
 		reply += "So, I replaced them with `0`.";
 	}
 
