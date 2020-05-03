@@ -28,6 +28,7 @@ const isCommand = (msg) => {
 }
 
 const rollDice = (num, size, keep) => {
+	if(size === 0) return 0;
 	var rolls = [];
 	for(var i = 0; i < num; i++) {
 		rolls.push(parseInt(Math.random() * size + 1));
@@ -125,19 +126,28 @@ const handle = (msg) => {
 	const errors = pool_tokens.filter((token) => !is_valid_pool_regex.test(token));
 	const values = pool_tokens.map((token) => evaluatePool(token));
 
-	var reply = "Found these tokens: [" + pool_tokens + "]!\n";
-	reply += "Separated by these operators: [" + operators + "].\n";
-	reply += "Got rolls of [" + values + "].";
+	var output = "Results: ";
+	output += values[0];
+	var final_val = values[0];
+	for(var i = 1; i < values.length; i++) {
+		output += " " + operators[i - 1] + " " + values[i];
+		final_val += (operators[i - 1] == "-" ? -1 : 1) * values[i];
+	}
+	output += " = " + final_val;
+
+	// var reply = "Found these tokens: [" + pool_tokens + "]!\n";
+	// reply += "Separated by these operators: [" + operators + "].\n";
+	// reply += "Got rolls of [" + values + "].";
 
 	if(errors.length > 0) {
-		reply += "\nBut, I didn't know what " + (errors.length == 1 ? "this was" : "these were") + " supposed to mean:";
-		reply += "\n```\n"
-		reply += errors.reduce((acc, val) => acc + "\n" + val);
-		reply += "```";
-		reply += "So, I replaced them with `0`.";
+		output += "\nBut, I didn't know what " + (errors.length == 1 ? "this was" : "these were") + " supposed to mean:";
+		output += "\n```\n"
+		output += errors.reduce((acc, val) => acc + "\n" + val);
+		output += "```";
+		output += "So, I replaced them with `0`.";
 	}
 
-	msg.channel.send(reply);
+	msg.channel.send(output);
 }
 
 bot.on("ready", () => {
