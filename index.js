@@ -27,10 +27,17 @@ const isCommand = (msg) => {
 	return checkAgainstAll((command) => content.startsWith(command), recognized_commands, false);
 }
 
-const rollDice = (num, size) => {
-	var acc = 0;
+const rollDice = (num, size, keep) => {
+	var rolls = [];
 	for(var i = 0; i < num; i++) {
-		acc += parseInt(Math.random() * size + 1);
+		rolls.push(parseInt(Math.random() * size + 1));
+	}
+
+	//should sort in descending order.
+	rolls.sort((a, b) => b - a);
+	var acc = 0;
+	for(var i = 0; i < keep && i < num; i++) {
+		acc += rolls[i];
 	}
 	return acc;
 }
@@ -51,16 +58,31 @@ const evaluatePool = (pool) => {
 			//first captured group at index 1.
 			const dice_size = parseInt(tokens[1]);
 			//then roll it.
-			return rollDice(1, dice_size);
+			return rollDice(1, dice_size, 1);
 		} else if(/^[0-9]+d[0-9]+$/.test(pool)) {
 			//no keep/drop, so just XdY
-			const tokens = pool.match(/^([0-9]+)d([0-9]+)/);
+			const tokens = pool.match(/^([0-9]+)d([0-9]+)$/);
 			//first captured group (number of dice) is index 1.
 			const num_dice = parseInt(tokens[1]);
 			//second captured group (size of dice) is index 2.
 			const dice_size = parseInt(tokens[2]);
 			//then roll.
-			return rollDice(num_dice, dice_size);
+			return rollDice(num_dice, dice_size, num_dice);
+		} else {
+			//must be the full XdYkZ.
+			const tokens = pool.match(/^([0-9]+)d([0-9]+)([kd])([0-9]+)$/);
+			//first group (numdice) is at [1]
+			const num_dice = parseInt(tokens[1]);
+			//second group (dice size) is at [2]
+			const dice_size = parseInt(tokens[2]);
+			//third group determines whether keep or drop, and is at [3]
+			const keep = tokens[3] === "k";
+			//fourth param is at [4]. number to keep if keep, or num - that if not.
+			const num_keep = keep ? parseInt(tokens[4]) : (num_dice - parseInt(tokens[4]));
+			if(num_keep < 0) num_keep = 0;
+			if(num_keep > num_dice) num_keep = num_dice;
+			//rollit  baby!
+			return rollDice(num_dice, dice_size, num_keep);
 		}
 
 		return 0;
