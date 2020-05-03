@@ -27,9 +27,42 @@ const isCommand = (msg) => {
 	return checkAgainstAll((command) => content.startsWith(command), recognized_commands, false);
 }
 
+const rollDice = (num, size) => {
+	var acc = 0;
+	for(var i = 0; i < num; i++) {
+		acc += parseInt(Math.random() * size + 1);
+	}
+	return acc;
+}
+
 const evaluatePool = (pool) => {
 	if(is_valid_pool_regex.test(pool)) {
 		//valid, so parse away.
+		if(pool === "") {
+			//technically fits the is_valid regex, so we'll just say its 0.
+			return 0;
+		} else if(/^[0-9]+$/.test(pool)) {
+			//just a number, so parse it.
+			return parseInt(pool);
+		} else if(/^d[0-9]+/.test(pool)) {
+			//case of dX(kdY)?
+			//here, we'll ignore the keep/drop, as only one die.
+			const tokens = pool.match(/^d([0-9]+)([kd][0-9]+|$))/);
+			//first captured group at index 1.
+			const dice_size = parseInt(tokens[1]);
+			//then roll it.
+			return rollDice(1, dice_size);
+		} else if(/^[0-9]+d[0-9]+$/.test(pool)) {
+			//no keep/drop, so just XdY
+			const tokens = pool.match(/^([0-9]+)d([0-9]+)/);
+			//first captured group (number of dice) is index 1.
+			const num_dice = parseInt(tokens[1]);
+			//second captured group (size of dice) is index 2.
+			const dice_size = parseInt(tokens[2]);
+			//then roll.
+			return rollDice(num_dice, dice_size);
+		}
+
 		return 0;
 	} else {
 		//invalid, return 0.
@@ -71,7 +104,8 @@ const handle = (msg) => {
 	const values = pool_tokens.map((token) => evaluatePool(token));
 
 	var reply = "Found these tokens: [" + pool_tokens + "]!\n";
-	reply += "Separated by these operators: [" + operators + "].";
+	reply += "Separated by these operators: [" + operators + "].\n";
+	reply += "Got rolls of [" + values + "].";
 
 	if(errors.length > 0) {
 		reply += "\nBut, I didn't know what " + (errors.length == 1 ? "this was" : "these were") + " supposed to mean:";
