@@ -20,8 +20,9 @@ const recognized_commands = [
 ];
 
 const is_valid_pool_regex = /^[0-9]*(d[0-9]+([dk][0-9]+)?)?$/;
-const end_of_pool = /[\+\- ]/;
+const end_of_pool = /[^0-9dk]/;
 const separator = /[ ]/;
+const operator = /[\+\-]/;
 
 const checkAgainstAll = (func, arr, and) => {
 	return arr.map(func).reduce((acc, val) => and ? acc & val : acc | val);
@@ -115,7 +116,7 @@ const handle = (msg) => {
 			curr_token += content[i];
 			i++;
 		}
-		while(i < content.length && separator.test(content[i])) {
+		while(i < content.length && !operator.test(content[i])) {
 			i++;
 		}
 		pool_tokens.push(curr_token);
