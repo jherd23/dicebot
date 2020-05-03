@@ -11,7 +11,12 @@ const recognized_commands = [
 	"!roll",
 	"/roll",
 	"!r",
-	"/r"
+	"/r",
+	"Roll",
+	"!Roll",
+	"/Roll",
+	"!R",
+	"/R"
 ];
 
 const is_valid_pool_regex = /^[0-9]*(d[0-9]+([dk][0-9]+)?)?$/;
