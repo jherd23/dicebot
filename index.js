@@ -19,9 +19,11 @@ const recognized_commands = [
 	"/R"
 ];
 
+const capture_pools = /[0-9]*(d[0-9]+([dk][0-9]+)?)?/g;
 const is_valid_pool_regex = /^[0-9]*(d[0-9]+([dk][0-9]+)?)?$/;
 const end_of_pool = /[^0-9dk]/;
 const separator = /[ ]/;
+const capture_operators = /[\+\-]/g;
 const operator = /[\+\-]/;
 
 const checkAgainstAll = (func, arr, and) => {
@@ -42,6 +44,7 @@ const rollDice = (num, size, keep) => {
 
 	//should sort in descending order.
 	rolls.sort((a, b) => b - a);
+	
 	var acc = 0;
 	for(var i = 0; i < keep && i < num; i++) {
 		acc += rolls[i];
@@ -61,7 +64,7 @@ const evaluatePool = (pool) => {
 		} else if(/^d[0-9]+/.test(pool)) {
 			//case of dX(kdY)?
 			//here, we'll ignore the keep/drop, as only one die.
-			const tokens = pool.match(/^d([0-9]+)([kd][0-9]+|$))/);
+			const tokens = pool.match(/^d([0-9]+)([kd][0-9]+|$)/);
 			//first captured group at index 1.
 			const dice_size = parseInt(tokens[1]);
 			//then roll it.
@@ -107,27 +110,10 @@ const handle = (msg) => {
 		msg.channel.send("Sorry, I didnt see a dice command in there.");
 		return;
 	}
-	var i = start_of_dice;
-	var pool_tokens = [];
-	var operators = [];
-	while(i < content.length) {
-		var curr_token = "";
-		while(i < content.length && !end_of_pool.test(content[i])) {
-			curr_token += content[i];
-			i++;
-		}
-		while(i < content.length && !operator.test(content[i])) {
-			i++;
-		}
-		pool_tokens.push(curr_token);
-		if(i < content.length) {
-			operators.push(content[i]);
-			i++;
-			while(i < content.length && separator.test(content[i])) {
-				i++;
-			}
-		}
-	}
+
+	const pool_tokens = content.match(capture_pools).filter((pool) => pool !== "") || [];
+
+	const operators = content.match(capture_operators) || [];
 
 	const errors = pool_tokens.filter((token) => !is_valid_pool_regex.test(token));
 	const values = pool_tokens.map((token) => evaluatePool(token));
@@ -140,10 +126,6 @@ const handle = (msg) => {
 		final_val += (operators[i - 1] == "-" ? -1 : 1) * values[i];
 	}
 	output += " = " + final_val;
-
-	// var reply = "Found these tokens: [" + pool_tokens + "]!\n";
-	// reply += "Separated by these operators: [" + operators + "].\n";
-	// reply += "Got rolls of [" + values + "].";
 
 	if(errors.length > 0) {
 		output += "\nBut, I didn't know what " + (errors.length == 1 ? "this was" : "these were") + " supposed to mean:";
